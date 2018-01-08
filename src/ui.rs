@@ -85,6 +85,8 @@ pub struct Ui {
     pending_scroll_events: Vec<event::Ui>,
     /// Mouse cursor
     mouse_cursor: cursor::MouseCursor,
+    /// FPS mode
+    fps_mode_enabled: bool,
 
     // TODO: Remove the following fields as they should now be handled by `input::Global`.
 
@@ -203,6 +205,7 @@ impl Ui {
             global_input: input::Global::new(),
             pending_scroll_events: Vec::new(),
             mouse_cursor: cursor::MouseCursor::Arrow,
+            fps_mode_enabled: false,
         }
     }
 
@@ -328,9 +331,15 @@ impl Ui {
     ///
     /// Note: This function expects that `ui.global_input.current.mouse.xy` is up-to-date.
     fn track_widget_under_mouse_and_update_capturing(&mut self) {
+        let mouse_xy = if self.fps_mode_enabled {
+            [self.win_w * 0.5, self.win_h * 0.5]
+        } else {
+            self.global_input.current.mouse.xy
+        };
+
         self.global_input.current.widget_under_mouse =
             graph::algo::pick_widgets(&self.depth_order.indices,
-                                      self.global_input.current.mouse.xy)
+                                      mouse_xy)
                                       .next(&self.widget_graph,
                                             &self.depth_order.indices,
                                             &self.theme);
@@ -347,6 +356,9 @@ impl Ui {
                     let event = event::Ui::WidgetUncapturesInputSource(idx, source).into();
                     self.global_input.push_event(event);
                     self.global_input.current.widget_capturing_mouse = None;
+
+                    // disable fps mode if it was enabled by the widget
+                    self.fps_mode_enabled = false;
                 }
             }
 
@@ -1226,6 +1238,12 @@ impl<'a> UiCell<'a> {
     /// Sets the mouse cursor
     pub fn set_mouse_cursor(&mut self, cursor: cursor::MouseCursor) {
         self.ui.mouse_cursor = cursor;
+    }
+
+    /// Enable or disable FPS mode.
+    /// Under FPS mode the mouse position is locked to the center of the window
+    pub fn set_fps_mode(&mut self, fps_mode_enabled: bool) {
+        self.ui.fps_mode_enabled = fps_mode_enabled;
     }
 }
 

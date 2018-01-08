@@ -50,6 +50,7 @@ pub fn convert_event<W>(e: winit::Event, window: &W) -> Option<Input>
 {
     match e {
         winit::Event::WindowEvent { event, .. } => convert_window_event(event, window),
+        winit::Event::DeviceEvent{ event, .. } => convert_device_event(event),
         _ => None,
     }
 }
@@ -158,6 +159,22 @@ pub fn convert_window_event<W>(e: winit::WindowEvent, window: &W) -> Option<Inpu
 
         winit::WindowEvent::Refresh => {
             Some(Input::Redraw)
+        },
+
+        _ => None,
+    }
+}
+
+/// A function for converting a `winit::DeviceEvent` to a `conrod::event::Input`.
+///
+/// This is useful for application that need delta mouse events
+pub fn convert_device_event(e: winit::DeviceEvent) -> Option<Input> {
+    match e {
+        winit::DeviceEvent::MouseMotion { delta: (dx, dy) } => {
+            let x = dx as Scalar;
+            let y = dy as Scalar;
+            let motion = input::Motion::MouseRelative { x: x, y: y };
+            Some(Input::Motion(motion).into())
         },
 
         _ => None,
