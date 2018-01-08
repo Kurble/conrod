@@ -121,7 +121,7 @@ void main() {
 
     // Image
     } else if (v_Mode == uint(1)) {
-        Target0 = texture(t_Color, v_Uv);
+        Target0 = v_Color * texture(t_Color, v_Uv);
 
     // 2D Geometry
     } else if (v_Mode == uint(2)) {
