@@ -332,8 +332,8 @@ impl Renderer {
 
         let rect_to_scissor = |rect: Rect| {
             let (w, h) = rect.w_h();
-            let left = (rect.left() * dpi_factor + half_win_w) as i32;
-            let top = (rect.top() * dpi_factor - half_win_h) as i32;
+            let left = (half_win_w + rect.left() * dpi_factor) as i32;
+            let top = (half_win_h - rect.top() * dpi_factor) as i32;
             let width = (w * dpi_factor) as u32;
             let height = (h * dpi_factor) as u32;
             Scissor {
